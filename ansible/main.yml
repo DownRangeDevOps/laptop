@@ -1,0 +1,40 @@
+---
+- name: Setup MacOS system
+  hosts: local
+
+  vars_files:
+    "{{ playbook_dir }}/config.default.yml"
+
+  pre_tasks:
+    - name: Include config customizations
+      include_vars: "{{ item }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/config.yml"
+      tags:
+        - config
+
+  roles:
+    - role: elliotweiser.osx-command-line-tools
+      when: enable.components.xcode
+      tags:
+        - xcode
+
+    - role: geerlingguy.mac.homebrew
+      when: enable.components.homebrew
+      vars:
+        homebrew_installed_packages: homebrew.packages
+        homebrew_cask_uninstalled_apps: homebrew.casks
+      tags:
+        - homebrew
+
+    - role: geerlingguy.mac.dock
+      when: enable.components.dock
+      tags:
+        - dock
+
+  tasks:
+    # Setup 1Password?
+
+    # Generate SSH keys
+
+    # Clone & setup dotfiles

@@ -1,0 +1,7 @@
+---
+
+- name: Clone dofiles locally
+  ansible.builtin.git:
+    accept_newhostkey: dotfiles.repository.accept_new_hostkey
+    clone: true
+    dest: dotfiles.repository.destination

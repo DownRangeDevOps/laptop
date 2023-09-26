@@ -1,0 +1,157 @@
+---
+downloads: ~/.ansible-downloads/
+
+language_versions:
+  go: 1.21.0
+  lua: 5.1
+  node: latest
+  python: 3.11.4
+  ruby: 3.2.2
+  rust: nightly
+
+enable:
+  components:
+    casks: true
+    dock: true
+    dotfiles: true
+    generate_ssh_keys: true
+    homebrew: true
+    packages: true
+    setup_1password: true
+    xcode: true
+
+  version_managers:
+    goenv: true
+    luaver: true
+    n: true
+    pyenv: true
+    rbenv: true
+    rustup: true
+
+dotfiles:
+  reposotiory:
+    url: "https://github.com/DownRangeDevOps/.dotfiles.git"
+    destination: ~/.dotfiles
+    accept_new_hostkey: true
+
+system:
+  dock:
+    remove_items:
+      - App Store
+      - Microsoft Edge
+      - Microsoft Excel
+      - Microsoft Outlook
+      - Microsoft Powerpoint
+      - Microsoft Word
+      - Launchpad
+      - Maps
+      - Photos
+      - Podcasts
+      - TV
+
+    add_items:
+      - Vivaldi
+      - iTerm
+      - Spotify
+      - Slack
+      - Microsoft Teams
+      - Notes
+      - Techsmith Capture
+      - System Preferences
+
+  homebrew:
+    casks:
+      - 1password
+      - 1password-cli
+      - alfred
+      - alt-tab
+      - beardedspice
+      - clocker
+      - coconutbattery
+      - dash
+      - docker
+      - flux
+      - flycut
+      - iterm2
+      - karabiner-elements
+      - keka
+      - kekaexternalhelper
+      - microsoft-teams
+      - postman
+      - sequel-pro
+      - shiftit
+      - slack
+      - snowflake-snowsql
+      - sourcetree
+      - spotify
+      - techsmith-capture
+
+    packages:
+      - bash-completion@2
+      - cask
+      - cmake
+      - composer
+      - cpanminus
+      - diff-so-fancy
+      - direnv
+      - dos2unix
+      - fd
+      - findutils
+      - fzf
+      - gh
+      - git
+      - git-absorb
+      - git-delta
+      - gnu-sed
+      - gnu-tar
+      - gnu-which
+      - goenv
+      - helm
+      - htop
+      - hub
+      - jq
+      - llvm
+      - luaver
+      - make
+      - moreutils
+      - n
+      - ncdu
+      - neovim
+      - neovim-remote
+      - ninja
+      - openssh
+      - perl
+      - pipx
+      - pyenv-virtualenv
+      - pyenv-virtualenvwrapper
+      - rbenv
+      - ripgrep
+      - rustup
+      - stern
+      - terraform-docs
+      - tfenv
+      - tree
+      - typescript
+      - vim
+      - wget
+      - z
+
+  pipx:
+    - ansible
+    - aws-shell
+    - awscli
+    - cookiecutter
+    - diffdate
+    - git-filter-repo
+    - pip-chill
+    - pipenv
+    - pre-commit
+    - ptpython
+    - pynvim
+    - thefuck
+
+  npm:
+    - neovim
+
+  gem:
+    - neovim
