@@ -1,3 +1,6 @@
+# Git
+.mailmap
+
 # Ansible
 *.retry
 ansible/config.yml
