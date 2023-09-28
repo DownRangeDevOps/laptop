@@ -1,40 +1,170 @@
 ---
-- name: Setup MacOS system
+- name: Setup MacOS Development System
   hosts: local
 
   vars_files:
     "{{ playbook_dir }}/config.default.yml"
 
+  vars_prompt:
+    - name: full_name
+      prompt: "Full name (enter to skip): "
+      private: false
+
+    - name: email_address
+      prompt: "Email (enter to skip): "
+      private: false
+
   pre_tasks:
-    - name: Include config customizations
+    - name: Include custom config
       include_vars: "{{ item }}"
       with_fileglob:
         - "{{ playbook_dir }}/config.yml"
       tags:
-        - config
+        - always
 
   roles:
     - role: elliotweiser.osx-command-line-tools
-      when: enable.components.xcode
+      when: enable_xcode
       tags:
+        - roles
         - xcode
 
     - role: geerlingguy.mac.homebrew
-      when: enable.components.homebrew
+      when: enable_homebrew
       vars:
-        homebrew_installed_packages: homebrew.packages
-        homebrew_cask_uninstalled_apps: homebrew.casks
+        ansible_become_password: ansible_become_password
+        homebrew_installed_packages: homebrew_required_packages
+        homebrew_cask_uninstalled_apps: homebrew_required_casks
       tags:
+        - roles
         - homebrew
 
     - role: geerlingguy.mac.dock
-      when: enable.components.dock
+      when: enable_dock
+      vars:
+        dockitems_remove: dock_remove_items
+        dockitems_persist: dock_add_items
       tags:
+        - roles
         - dock
 
   tasks:
-    # Setup 1Password?
-
-    # Generate SSH keys
-
     # Clone & setup dotfiles
+    - name: dotfiles block
+      block:
+
+      - name: Ensure the dotfiles repository is present and up to date
+        ansible.builtin.git:
+          accept_new_hostkey: dotfiles_git_accept_new_hostkey
+          branch: dotfiles_git_branch
+          dest: dotfiles_git_dest
+          executable: brew_prefix.stdout
+          repo: dotfiles_git_url
+
+      - name: Ensure dotfiles setup is executable
+        ansible.builtin.file:
+          mode: "u+x"
+          path: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
+          state: file
+        when: dotfiles_setup_executable
+
+      - name: Run dotfiles setup executable
+        ansible.builtin.command: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
+        when: dotfiles_setup_executable
+
+      when: enable_dotfiles
+      tags:
+        - dotfiles
+
+    - name: Set global git configuration values
+      git_config:
+        executable: "{{ brew_prefix }}/git"
+        name: item.name
+        scope: global
+        value: item.value
+      loop:
+        - name: name
+          value: full_name
+        - name: email
+          value: email_address
+      when: enable_git_config and item.value != ""
+      tags:
+        - git_config
+
+    # Language version managers
+    - name: Ensure the desired Golang version is installed and globally set
+      command: goenv {{ item }}
+      loop:
+        - install --skip-existing {{ goenv_global_version }}
+        - global {{ goenv_global_version }}
+
+    - name: Ensure the desired Lua version is installed and globally set
+      command: luaver {{ item }}
+      loop:
+        - install {{ luaver_global_version }}
+        - set-default {{ luaver_global_version }}
+
+    - name: Ensure the desired NodeJS version is installed and globally set
+      command: n {{ n_global_version }}
+
+    - name: Query pyenv for the latest known Python 3 version
+      command: pyenv latest --known 3
+      register: pyenv_latest_results
+      when: pyenv_global_version == "latest"
+
+    - name: Set the latest known Python version
+      set_fact:
+        pyenv_global_version: pyenv_latest_results.stdout
+      when: pyenv_global_version == "latest"
+
+    - name: Ensure the desired Python version is installed and globally set
+      command: pyenv {{ item }}
+      loop:
+        - install --skip-existing {{ pyenv_global_version }}
+        - set-default {{ pyenv_global_version }}
+
+    - name: Ensure the desired Ruby version is installed and globally set
+      command: luaver {{ item }}
+      loop:
+        - install --skip-existing {{ rbenv_global_version }}
+        - set-default {{ rbenv_global_version }}
+
+    - name: Ensure the desired Rust version is installed and globally set
+      command: rustup toolchain install {{ rustup_global_version }}
+
+    # pipx packages
+    - name: Ensure pipx python packages are installed
+      community.general.pipx:
+        executable: "{{ brew_prefix }}/bin/pipx"
+        name: item
+      loop: pipx_required_packages
+      when: enable_pipx
+      tags:
+        - pipx
+
+    # NodeJS packages
+    - name: Query the installed NodeJS versions from n
+      command: n ls
+      register: n_ls_results
+
+    - name: Query the path to the latest installed NodeJS version from n
+      command: "n which {{ n_ls_results.stdout[-1] }}"
+      register: n_which_results
+
+    - name: Ensure NodeJS npm packages are installed
+      npm:
+        executable: "{{ n_which_results.stdout }}/../npm"
+        global: true
+        name: item
+      loop: npm_required_packages
+
+    # Ruby gems
+    - name: Query the path to the rbenv gem executable
+      command: "{{ brew_prefix }}/bin/rbenv which gem"
+      register: rbenv_which_gem_results
+
+    - name: Ensure Ruby gems are installed
+      gem:
+        executable: rbenv_which_gem_results.stdout
+        name: item
+      loop: gem_required_packages
