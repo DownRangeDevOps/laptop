@@ -41,13 +41,29 @@
   tasks:
     # Language version managers
     - name: Ensure the desired Golang version is installed and globally set
-      command: "goenv {{ item }}"
-      loop:
-        - "install --skip-existing {{ goenv_global_version }}"
-        - "global {{ goenv_global_version }}"
+      command: "goenv install --skip-existing {{ goenv_global_version }}"
       tags:
         - goenv
         - languages
+
+    - name: Get latest goenv installed version
+      shell: "goenv versions | grep '^\\*' | cut -d' ' -f2"
+      register: goenv_versions_results
+      changed_when: False
+      tags:
+        - always
+
+    - name: Set the goenv_latest version variable
+      set_fact:
+        goenv_global_version: "{{ goenv_versions_results.stdout }}"
+      when: goenv_global_version == "latest"
+      changed_when: False
+      tags:
+        - always
+
+
+    - name: Ensure the desired goenv versions is globally set
+      command: "goenv global {{ goenv_global_version }}"
 
     - name: Ensure the desired Lua version is installed and globally set
       command: "luaver {{ item }}"
@@ -69,7 +85,6 @@
       register: pyenv_latest_results
       when: pyenv_global_version == "latest"
       changed_when: False
-      check_mode: False
       tags:
         - always
 
@@ -156,7 +171,6 @@
       command: "{{ homebrew_bin_path }}/pyenv which pip"
       register: pyenv_which_pip_results
       changed_when: False
-      check_mode: False
       tags:
         - always
         - pip
@@ -175,12 +189,12 @@
       tags:
         - pip
 
-
     # pipx packages
     - name: Ensure pipx python packages are installed
       community.general.pipx:
         executable: "{{ homebrew_bin_path }}/pipx"
         name: "{{ item }}"
+        install_deps: True
       loop: "{{ pipx_required_packages }}"
       when: enable_pipx | bool
       tags:
@@ -200,7 +214,6 @@
       command: "n which {{ n_ls_results.stdout_lines | last }}"
       register: n_which_results
       changed_when: False
-      check_mode: False
       tags:
         - always
 
@@ -208,7 +221,6 @@
       set_fact:
         n_node_bin_path: "{{ n_which_results.stdout | regex_replace('node$') }}"
       changed_when: False
-      check_mode: False
       tags:
         - always
 
@@ -227,7 +239,6 @@
       command: "{{ homebrew_bin_path }}/rbenv which gem"
       register: rbenv_which_gem_results
       changed_when: False
-      check_mode: False
       tags:
         - always
 

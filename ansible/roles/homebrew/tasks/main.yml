@@ -39,6 +39,7 @@
       homebrew_cask:
         name: "{{ item }}"
         state: absent
+        sudo_password: "{{ ansible_become_password | default(omit) }}"
       loop: "{{ homebrew_cask_uninstalled_apps }}"
       tags:
         - casks

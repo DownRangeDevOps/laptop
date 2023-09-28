@@ -87,7 +87,7 @@ PIPX_INSTALLED_PACKAGES=$("${PIPX_BIN}" list --short)
 
 if [[ ! ${PIPX_INSTALLED_PACKAGES} =~ "ansible" ]]; then
     printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing Ansible...$(tput sgr0)" ""
-    "${PIPX_BIN}" install ansible
+    "${PIPX_BIN}" install --include-deps ansible
 fi
 
 # Install Ansible roles
@@ -101,7 +101,11 @@ PATH="${PIPX_PREFIX}:${PATH}"
 
     # Run the Ansible playbook
     printf "\n%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
-    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "${ANSIBLE_ARGS[@]:-}" main.yml
+    if [[ -n ${ANSIBLE_ARGS[*]-} ]]; then
+        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "${ANSIBLE_ARGS[@]}" main.yml
+    else
+        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass main.yml
+    fi
 )
 
 # vi: ft=sh

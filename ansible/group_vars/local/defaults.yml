@@ -27,17 +27,21 @@ dockitems_remove:
 
 dockitems_add:
   - name: "Safari"
-    path: "/Applications/Safari.app"
+    path: "/System/Volumes/Cryptexes/App/System/Applications/Safari.app"
+    pos: 2
   - name: "iTerm"
     path: "/Applications/iTerm.app"
+    pos: 3
   - name: "Slack"
     path: "/Applications/Slack.app"
+    pos: 4
   - name: "Microsoft Teams"
     path: "/Applications/Microsoft Teams.app"
+    pos: 5
   - name: "Notes"
     path: "/Applications/Notes.app"
-  - name: "System Preferences"
-    path: "/Applications/System Preferences.app"
+  - name: "System Settings"
+    path: "/Applications/System Settings.app"
 
 # Language versions ("" = disable, "latest" supported when available)
 goenv_global_version: "latest"
