@@ -2,8 +2,17 @@
 - name: Set Homebrew homebrew_user variable
   set_fact:
     homebrew_user: "{{ homebrew_user | default(ansible_user_id) }}"
+    homebrew_group: "{{ homebrew_group | default(ansible_user_gid) }}"
   tags:
     - always
+
+- name: Ensure the homebrew parent directory has the correct permissions
+  file:
+    group: "{{ ansible_user_gid }}"
+    mode: "0755"
+    owner: "{{ ansible_user_id }}"
+    path: "{{ homebrew_prefix }}/.."
+    state: directory
 
 - name: Collect package manager facts
   setup:

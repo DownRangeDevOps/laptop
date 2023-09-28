@@ -3,7 +3,7 @@
 
 # Ansible
 *.retry
-ansible/config.yml
+# ansible/config.yml
 ansible/galaxy
 
 # Temp files

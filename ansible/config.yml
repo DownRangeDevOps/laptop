@@ -1,24 +1,20 @@
+---
 # Git global config
-git_name: ""
-git_email: ""
-
-# Enable/disable components
-enable_dock: true
-enable_dotfiles: true
-enable_git_config: true
-enable_homebrew: true
-enable_pipx: true
-enable_xcode: true
+git_user: "Ryan Fisher"
+git_email: "ryan@downrangedevops.com"
 
 # Dotfiles component config
-dotfiles_git_accept_new_hostkey: true
+dotfiles_git_url: "git@github.com:DownRangeDevOps/.dotfiles.git"
 dotfiles_git_dest: "~/.dotfiles"
-dotfiles_git_url: "git@github.com:eample/.dotfiles.git"
-dotfiles_setup_executable: "setup.sh"
 
 # Dock component config
 dockitems_remove:
   - "App Store"
+  - "Microsoft Edge"
+  - "Microsoft Excel"
+  - "Microsoft Outlook"
+  - "Microsoft PowerPoint"
+  - "Microsoft Word"
   - "Launchpad"
   - "Maps"
   - "Photos"
@@ -26,20 +22,25 @@ dockitems_remove:
   - "TV"
 
 dockitems_add:
-  - name: "Safari"
-    path: "/System/Volumes/Cryptexes/App/System/Applications/Safari.app"
+  - name: "Vivaldi"
+    path: "/Applications/Vivaldi.app"
     pos: 2
   - name: "iTerm"
     path: "/Applications/iTerm.app"
     pos: 3
+  - name: "Spotify"
+    path: "/Applications/Spotify.app"
+    pos: 4
   - name: "Slack"
     path: "/Applications/Slack.app"
-    pos: 4
+    pos: 5
   - name: "Microsoft Teams"
     path: "/Applications/Microsoft Teams.app"
-    pos: 5
+    pos: 6
   - name: "Notes"
     path: "/Applications/Notes.app"
+  - name: "Techsmith Capture"
+    path: "/Applications/TechSmith Capture.app"
   - name: "System Settings"
     path: "/Applications/System Settings.app"
 
@@ -52,11 +53,20 @@ rbenv_global_version: "3.2.2"
 
 # Homebrew
 homebrew_tap: []
-homebrew_cask_uninstalled_apps: []
 homebrew_required_casks:
+  - "1password"
+  - "1password-cli"
+  - "alfred"
+  - "alt-tab"
   - "beardedspice"
+  - "clocker"
+  - "coconutbattery"
+  - "dash"
+  - "docker"
+  - "flux"
   - "flycut"
   - "iterm2"
+  - "karabiner-elements"
   - "keka"
   - "kekaexternalhelper"
   - "microsoft-teams"
@@ -64,12 +74,17 @@ homebrew_required_casks:
   - "sequel-pro"
   - "shiftit"
   - "slack"
+  - "snowflake-snowsql"
   - "sourcetree"
+  - "spotify"
   - "techsmith-capture"
-homebrew_uninstalled_packages: []
+  - "vivaldi"
 homebrew_required_packages:
   - "bash-completion@2"
+  - "cask"
   - "cmake"
+  - "composer"
+  - "cpanminus"
   - "diff-so-fancy"
   - "direnv"
   - "dos2unix"
@@ -84,6 +99,7 @@ homebrew_required_packages:
   - "gnu-tar"
   - "gnu-which"
   - "goenv"
+  - "helm"
   - "htop"
   - "hub"
   - "jq"
@@ -97,22 +113,25 @@ homebrew_required_packages:
   - "neovim-remote"
   - "ninja"
   - "openssh"
+  - "perl"
   - "pipx"
   - "pyenv-virtualenv"
   - "pyenv-virtualenvwrapper"
   - "rbenv"
   - "ripgrep"
   - "rustup-init"
+  - "stern"
+  - "terraform-docs"
+  - "tfenv"
   - "tree"
+  - "typescript"
   - "vim"
   - "wget"
   - "z"
 
-# n
-n_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt', '/usr/local') }}"
-
 # pip global packages
-pip_required_packages: []
+pip_required_packages:
+  - "pynvim"
 
 # pipx managed python packages
 pipx_required_packages:
@@ -120,14 +139,18 @@ pipx_required_packages:
   - "aws-shell"
   - "awscli"
   - "cookiecutter"
+  - "diffdate"
   - "git-filter-repo"
   - "pip-chill"
   - "pipenv"
   - "pre-commit"
   - "ptpython"
+  - "thefuck"
 
 # npm packages
-npm_required_packages: []
+npm_required_packages:
+  - "neovim"
 
 # gem packages
-gem_required_packages: []
+gem_required_packages:
+  - "neovim"

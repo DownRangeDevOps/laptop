@@ -8,7 +8,7 @@ ANSIBLE_ARGS=()
 
 # If help is displayed, ignore everything else
 if [[ "$*" =~ "--help" || "$*" =~ "-h" ]]; then
-    printf "%s" \
+    printf "%s\n" \
         "USAGE: setup [-h|--help]" \
         "" \
         "SYNOPSIS:" \

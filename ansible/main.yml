@@ -39,7 +39,7 @@
         - dock
 
   tasks:
-    # Language version managers
+    # goenv
     - name: Ensure the desired Golang version is installed and globally set
       command: "goenv install --skip-existing {{ goenv_global_version }}"
       tags:
@@ -74,12 +74,7 @@
         - lua
         - languages
 
-    - name: Ensure the desired NodeJS version is installed and globally set
-      command: "n {{ n_global_version }}"
-      tags:
-        - nodejs
-        - languages
-
+    # pyenv
     - name: Query pyenv for the latest known Python 3 version
       command: pyenv latest --known 3
       register: pyenv_latest_results
@@ -90,7 +85,7 @@
 
     - name: Set the latest known Python version
       set_fact:
-        pyenv_global_version: pyenv_latest_results.stdout
+        pyenv_global_version: "{{ pyenv_latest_results.stdout }}"
       when: pyenv_global_version == "latest"
       tags:
         - always
@@ -99,24 +94,37 @@
       command: "pyenv {{ item }}"
       loop:
         - "install --skip-existing {{ pyenv_global_version }}"
-        - "set-default {{ pyenv_global_version }}"
+        - "global {{ pyenv_global_version }}"
       tags:
         - python
         - languages
 
+    # n
+    - name: Ensure the n directory is present and owned by the current user
+      file:
+        group: "{{ ansible_user_gid }}"
+        mode: "0754"
+        owner: "{{ ansible_user_id }}"
+        path: "{{ n_prefix }}"
+        state: directory
+      become: true
+
+    - name: Ensure the desired NodeJS version is installed and globally set
+      command: "n {{ n_global_version }}"
+      environment:
+        N_PREFIX: "{{ n_prefix }}"
+      tags:
+        - nodejs
+        - languages
+
+    # rbenv
     - name: Ensure the desired Ruby version is installed and globally set
       command: rbenv {{ item }}
       loop:
         - "install --skip-existing {{ rbenv_global_version }}"
-        - "set-default {{ rbenv_global_version }}"
+        - "global {{ rbenv_global_version }}"
       tags:
         - ruby
-        - languages
-
-    - name: Ensure the desired Rust version is installed and globally set
-      command: "rustup toolchain install {{ rustup_global_version }}"
-      tags:
-        - rust
         - languages
 
     # Clone & setup dotfiles
