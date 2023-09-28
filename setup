@@ -3,7 +3,8 @@ set -uo pipefail;
 
 # defaults
 PLAYBOOK_DIR="ansible"
-DEPS=(pyenv pipx)
+DEPS=(pyenv pipx sed grep)
+ANSIBLE_ARGS=()
 
 # If help is displayed, ignore everything else
 if [[ "$*" =~ "--help" || "$*" =~ "-h" ]]; then
@@ -52,25 +53,32 @@ if [[ $# -gt 0 ]]; then
 fi
 
 # Install Homebrew
-if ! command -v brew > /dev/null; then
+if [[ "$(uname -m)" == "x86_64" ]]; then
+    BREW_PREFIX="/usr/local"
+else
+    BREW_PREFIX="/opt/homebrew"
+fi
+
+if ! command -v "${BREW_PREFIX}/bin/brew" > /dev/null; then
     printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing Homebrew...$(tput sgr0)" ""
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
 # Install dependencies
 printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing setup dependencies...$(tput sgr0)" ""
-/usr/local/bin/brew install "${DEPS[@]}" 2> /dev/null
+"${BREW_PREFIX}/bin/brew" install "${DEPS[@]}" 2> /dev/null
 
-BREW_PREFIX=$(brew --prefix)
 GNU_SED_BIN="${BREW_PREFIX}/opt/gnu-sed/libexec/gnubin/sed"
 GNU_GREP_BIN="${BREW_PREFIX}/opt/grep/libexec/gnubin/grep"
 PIPX_BIN="${BREW_PREFIX}/bin/pipx"
 
 # Install pyenv managed Python
-PYTHON_LATEST=$(pyenv latest --known 3)
+PYENV_BIN="${BREW_PREFIX}/bin/pyenv"
+PYTHON_LATEST=$(${PYENV_BIN} latest --known 3)
+
 printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing Python ${PYTHON_LATEST}...$(tput sgr0)" ""
-"${BREW_PREFIX}"/bin/pyenv install --skip-existing "${PYTHON_LATEST}"
-"${BREW_PREFIX}"/bin/pyenv global "${PYTHON_LATEST}"
+"${PYENV_BIN}" install --skip-existing "${PYTHON_LATEST}"
+"${PYENV_BIN}" global "${PYTHON_LATEST}"
 
 # Install Ansible
 PIPX_INSTALLED_PACKAGES=$("${PIPX_BIN}" list --short)
@@ -81,10 +89,10 @@ if [[ ! ${PIPX_INSTALLED_PACKAGES} =~ "ansible" ]]; then
 fi
 
 # Install Ansible roles
+printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing playbook role dependencies...$(tput sgr0)" ""
 PIPX_PREFIX=$(${PIPX_BIN} environment | "${GNU_GREP_BIN}" "^PIPX_BIN_DIR" | "${GNU_SED_BIN}" "s/.*=//")
 (
     cd "${PLAYBOOK_DIR}" || exit 1
-    printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing playbook role dependencies...$(tput sgr0)" ""
     "${PIPX_PREFIX}/ansible-galaxy" collection install --ignore-errors --requirements-file requirements.yml
     "${PIPX_PREFIX}/ansible-galaxy" role install --ignore-errors --roles-path galaxy --role-file requirements.yml
 

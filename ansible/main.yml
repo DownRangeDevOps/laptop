@@ -14,17 +14,6 @@
         with_fileglob:
           - "{{ playbook_dir }}/config.yml"
 
-      - name: Query brew prefix
-        command: brew --prefix
-        register: brew_prefix_results
-        changed_when: False
-        check_mode: False
-
-      - name: Set brew_prefix variable
-        set_fact:
-          brew_prefix: "{{ brew_prefix_results.stdout }}"
-          homebrew_bin_path: "{{ brew_prefix_results.stdout }}/bin"
-
       tags:
         - always
 
@@ -37,9 +26,6 @@
 
     - role: homebrew
       when: enable_homebrew | bool
-      vars:
-        homebrew_prefix: "{{ brew_prefix }}"
-        homebrew_brew_bin_path: "{{ homebrew_bin_path }}"
       tags:
         - roles
         - homebrew
