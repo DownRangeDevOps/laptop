@@ -55,11 +55,12 @@ PIPX_PREFIX=$(${PIPX_BIN} environment | "${GNU_GREP_BIN}" "^PIPX_BIN_DIR" | "${G
 (
     cd "${PLAYBOOK_DIR}" || exit 1
     printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing playbook role dependencies...$(tput sgr0)" ""
-    "${PIPX_PREFIX}/ansible-galaxy" install --role-file requirements.yml
+    "${PIPX_PREFIX}/ansible-galaxy" collection install --ignore-errors --requirements-file requirements.yml
+    "${PIPX_PREFIX}/ansible-galaxy" role install --ignore-errors --roles-path roles --role-file requirements.yml
 
     # Run the Ansible playbook
-    printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
-    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass --check main.yml
+    printf "\n%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
+    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass --skip-tags roles --check main.yml
 )
 
 # vi: ft=sh

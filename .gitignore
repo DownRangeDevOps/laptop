@@ -1,7 +1,7 @@
 # Ansible
 *.retry
 ansible/config.yml
-ansible/roles
+ansible/galaxy
 
 # Temp files
 tmp_*

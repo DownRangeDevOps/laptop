@@ -1,0 +1,14 @@
+---
+homebrew_folders_base:
+  - Caskroom
+  - Cellar
+  - Frameworks
+  - Homebrew
+  - bin
+  - etc
+  - include
+  - lib
+  - opt
+  - sbin
+  - share
+  - var

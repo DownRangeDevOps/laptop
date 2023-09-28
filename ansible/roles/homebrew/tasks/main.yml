@@ -1,0 +1,102 @@
+---
+- name: Set Homebrew homebrew_user variable
+  set_fact:
+    homebrew_user: "{{ homebrew_user | default(ansible_user_id) }}"
+  tags:
+    - always
+
+- name: Collect package manager facts
+  setup:
+    filter: ansible_pkg_mgr
+  tags:
+    - always
+
+- name: Escalate privileges if Homebrew user is not the user running the playbook
+  block:
+
+    - name: Ensure brew is updated
+      command: "{{ homebrew_brew_bin_path }}/brew update --force"
+
+    - name: Query brew for the Homebrew cache location
+      command: "{{ homebrew_brew_bin_path }}/brew --cache"
+      register: homebrew_cache_path
+      changed_when: false
+      check_mode: false
+      tags:
+        - always
+
+    - name: Ensure configured taps are tapped
+      homebrew_tap:
+        tap: "{{ item.name | default(item) }}"
+        url: "{{ item.url | default(omit) }}"
+        state: present
+      loop: "{{ homebrew_taps }}"
+      tags:
+        - taps
+
+    # Casks
+    - name: Ensure blacklisted cask applications are not installed
+      homebrew_cask:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ homebrew_cask_uninstalled_apps }}"
+      tags:
+        - casks
+
+    - name: Ensure required cask applications are installed
+      homebrew_cask:
+        name: "{{ homebrew_required_casks }}"
+        state: present
+        accept_external_apps: "{{ homebrew_cask_accept_external_apps }}"
+        sudo_password: "{{ ansible_become_password | default(omit) }}"
+      notify:
+        - Clear homebrew cache
+      tags:
+        - casks
+
+    - name: Ensure blacklisted Homebrew packages are not installed
+      homebrew:
+        name: "{{ homebrew_uninstalled_packages }}"
+        state: absent
+      tags:
+        - packages
+
+    # Packages
+    - name: Ensure required Homebrew packages are installed
+      homebrew:
+        name: "{{ homebrew_required_packages }}"
+        state: present
+      notify:
+        - Clear homebrew cache
+      tags:
+        - packages
+
+    - name: Upgrade all Homebrew packages
+      homebrew:
+        update_homebrew: true
+        upgrade_all: true
+      when: homebrew_upgrade_all_packages | bool
+      notify:
+        - Clear homebrew cache
+      tags:
+        - packages
+
+    - name: Check for Brewfile
+      stat:
+        path: "{{ homebrew_brewfile_dir }}/Brewfile"
+      register: homebrew_brewfile
+      check_mode: false
+      when: homebrew_use_brewfile | bool
+      tags:
+        - always
+
+    - name: Install from Brewfile
+      command: "{{ homebrew_brew_bin_path }}/brew bundle chdir={{ homebrew_brewfile_dir }}"
+      when: homebrew_brewfile.stat.exists and homebrew_use_brewfile | bool
+      tags:
+        - packages
+
+  # Privilege escalation is only required for inner steps when
+  # the `homebrew_user` doesn't match the `ansible_user_id`
+  become: "{{ (homebrew_user != ansible_user_id) | bool }}"
+  become_user: "{{ homebrew_user }}"

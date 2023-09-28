@@ -5,166 +5,245 @@
   vars_files:
     "{{ playbook_dir }}/config.default.yml"
 
-  vars_prompt:
-    - name: full_name
-      prompt: "Full name (enter to skip): "
-      private: false
-
-    - name: email_address
-      prompt: "Email (enter to skip): "
-      private: false
-
   pre_tasks:
-    - name: Include custom config
-      include_vars: "{{ item }}"
-      with_fileglob:
-        - "{{ playbook_dir }}/config.yml"
+    - name: Set variables pre-tasks
+      block:
+
+      - name: Include custom config
+        include_vars: "{{ item }}"
+        with_fileglob:
+          - "{{ playbook_dir }}/config.yml"
+
+      - name: Query brew prefix
+        command: brew --prefix
+        register: brew_prefix_results
+        changed_when: False
+        check_mode: False
+
+      - name: Set brew_prefix variable
+        set_fact:
+          brew_prefix: "{{ brew_prefix_results.stdout }}"
+          homebrew_bin_path: "{{ brew_prefix_results.stdout }}/bin"
+
       tags:
         - always
 
   roles:
     - role: elliotweiser.osx-command-line-tools
-      when: enable_xcode
+      when: enable_xcode | bool
       tags:
         - roles
         - xcode
 
-    - role: geerlingguy.mac.homebrew
-      when: enable_homebrew
+    - role: homebrew
+      when: enable_homebrew | bool
       vars:
-        ansible_become_password: ansible_become_password
-        homebrew_installed_packages: homebrew_required_packages
-        homebrew_cask_uninstalled_apps: homebrew_required_casks
+        homebrew_prefix: "{{ brew_prefix }}"
+        homebrew_brew_bin_path: "{{ homebrew_bin_path }}"
       tags:
         - roles
         - homebrew
 
     - role: geerlingguy.mac.dock
-      when: enable_dock
+      when: enable_dock | bool
       vars:
-        dockitems_remove: dock_remove_items
-        dockitems_persist: dock_add_items
+        dockitems_persist: "{{ dockitems_add }}"
       tags:
         - roles
         - dock
 
   tasks:
-    # Clone & setup dotfiles
-    - name: dotfiles block
-      block:
-
-      - name: Ensure the dotfiles repository is present and up to date
-        ansible.builtin.git:
-          accept_new_hostkey: dotfiles_git_accept_new_hostkey
-          branch: dotfiles_git_branch
-          dest: dotfiles_git_dest
-          executable: brew_prefix.stdout
-          repo: dotfiles_git_url
-
-      - name: Ensure dotfiles setup is executable
-        ansible.builtin.file:
-          mode: "u+x"
-          path: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
-          state: file
-        when: dotfiles_setup_executable
-
-      - name: Run dotfiles setup executable
-        ansible.builtin.command: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
-        when: dotfiles_setup_executable
-
-      when: enable_dotfiles
-      tags:
-        - dotfiles
-
-    - name: Set global git configuration values
-      git_config:
-        executable: "{{ brew_prefix }}/git"
-        name: item.name
-        scope: global
-        value: item.value
-      loop:
-        - name: name
-          value: full_name
-        - name: email
-          value: email_address
-      when: enable_git_config and item.value != ""
-      tags:
-        - git_config
-
     # Language version managers
     - name: Ensure the desired Golang version is installed and globally set
-      command: goenv {{ item }}
+      command: "goenv {{ item }}"
       loop:
-        - install --skip-existing {{ goenv_global_version }}
-        - global {{ goenv_global_version }}
+        - "install --skip-existing {{ goenv_global_version }}"
+        - "global {{ goenv_global_version }}"
+      tags:
+        - goenv
+        - languages
 
     - name: Ensure the desired Lua version is installed and globally set
-      command: luaver {{ item }}
+      command: "luaver {{ item }}"
       loop:
-        - install {{ luaver_global_version }}
-        - set-default {{ luaver_global_version }}
+        - "install {{ luaver_global_version }}"
+        - "set-default {{ luaver_global_version }}"
+      tags:
+        - lua
+        - languages
 
     - name: Ensure the desired NodeJS version is installed and globally set
-      command: n {{ n_global_version }}
+      command: "n {{ n_global_version }}"
+      tags:
+        - nodejs
+        - languages
 
     - name: Query pyenv for the latest known Python 3 version
       command: pyenv latest --known 3
       register: pyenv_latest_results
       when: pyenv_global_version == "latest"
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
 
     - name: Set the latest known Python version
       set_fact:
         pyenv_global_version: pyenv_latest_results.stdout
       when: pyenv_global_version == "latest"
+      tags:
+        - always
 
     - name: Ensure the desired Python version is installed and globally set
-      command: pyenv {{ item }}
+      command: "pyenv {{ item }}"
       loop:
-        - install --skip-existing {{ pyenv_global_version }}
-        - set-default {{ pyenv_global_version }}
+        - "install --skip-existing {{ pyenv_global_version }}"
+        - "set-default {{ pyenv_global_version }}"
+      tags:
+        - python
+        - languages
 
     - name: Ensure the desired Ruby version is installed and globally set
-      command: luaver {{ item }}
+      command: rbenv {{ item }}
       loop:
-        - install --skip-existing {{ rbenv_global_version }}
-        - set-default {{ rbenv_global_version }}
+        - "install --skip-existing {{ rbenv_global_version }}"
+        - "set-default {{ rbenv_global_version }}"
+      tags:
+        - ruby
+        - languages
 
     - name: Ensure the desired Rust version is installed and globally set
-      command: rustup toolchain install {{ rustup_global_version }}
+      command: "rustup toolchain install {{ rustup_global_version }}"
+      tags:
+        - rust
+        - languages
+
+    # Clone & setup dotfiles
+    - name: dotfiles block
+      block:
+
+      - name: Ensure the dotfiles repository is present and up to date
+        git:
+          accept_newhostkey: "{{ dotfiles_git_accept_new_hostkey }}"
+          dest: "{{ dotfiles_git_dest }}"
+          executable: "{{ homebrew_bin_path }}/git"
+          repo: "{{ dotfiles_git_url }}"
+
+      - name: Ensure dotfiles setup is executable
+        file:
+          mode: "u+x"
+          path: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
+          state: file
+        when: dotfiles_setup_executable | bool
+
+      - name: Run dotfiles setup executable
+        command: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
+        when: dotfiles_setup_executable | bool
+
+      when: enable_dotfiles | bool
+      tags:
+        - dotfiles
+
+    # Git configuration
+    - name: Set global git configuration values
+      git_config:
+        name: "{{ item.name }}"
+        scope: global
+        value: "{{ item.value }}"
+      loop:
+        - name: user.name
+          value: "{{ git_name }}"
+        - name: user.email
+          value: "{{ git_email }}"
+      when: enable_git_config and item.value != ""
+      tags:
+        - git-config
+
+    # pip global packages
+    - name: Query pyenv for the path to the current pip version
+      command: "{{ homebrew_bin_path }}/pyenv which pip"
+      register: pyenv_which_pip_results
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
+        - pip
+
+    - name: Set pip path variable
+      set_fact:
+        pip_bin_path: "{{ pyenv_which_pip_results.stdout }}"
+      tags:
+        - always
+        - pip
+
+    - name: Ensure pip python packages are installed
+      pip:
+        executable: "{{ pip_bin_path }}"
+        name: "{{ pip_required_packages }}"
+      tags:
+        - pip
+
 
     # pipx packages
     - name: Ensure pipx python packages are installed
       community.general.pipx:
-        executable: "{{ brew_prefix }}/bin/pipx"
-        name: item
-      loop: pipx_required_packages
-      when: enable_pipx
+        executable: "{{ homebrew_bin_path }}/pipx"
+        name: "{{ item }}"
+      loop: "{{ pipx_required_packages }}"
+      when: enable_pipx | bool
       tags:
         - pipx
+        - packages
 
-    # NodeJS packages
+    # npm packages
     - name: Query the installed NodeJS versions from n
       command: n ls
       register: n_ls_results
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
 
     - name: Query the path to the latest installed NodeJS version from n
-      command: "n which {{ n_ls_results.stdout[-1] }}"
+      command: "n which {{ n_ls_results.stdout_lines | last }}"
       register: n_which_results
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
+
+    - name: Set path to latest NodeJS version managed by n
+      set_fact:
+        n_node_bin_path: "{{ n_which_results.stdout | regex_replace('node$') }}"
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
 
     - name: Ensure NodeJS npm packages are installed
       npm:
-        executable: "{{ n_which_results.stdout }}/../npm"
-        global: true
+        executable: "{{ n_node_bin_path }}/npm"
+        global: True
         name: item
-      loop: npm_required_packages
+      loop: "{{ npm_required_packages }}"
+      tags:
+        - npm
+        - packages
 
     # Ruby gems
     - name: Query the path to the rbenv gem executable
-      command: "{{ brew_prefix }}/bin/rbenv which gem"
+      command: "{{ homebrew_bin_path }}/rbenv which gem"
       register: rbenv_which_gem_results
+      changed_when: False
+      check_mode: False
+      tags:
+        - always
 
     - name: Ensure Ruby gems are installed
       gem:
-        executable: rbenv_which_gem_results.stdout
-        name: item
-      loop: gem_required_packages
+        executable: "{{ rbenv_which_gem_results.stdout }}"
+        name: "{{ item }}"
+      loop: "{{ gem_required_packages }}"
+      tags:
+        - gem
+        - packages
