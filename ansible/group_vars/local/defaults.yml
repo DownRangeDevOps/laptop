@@ -12,111 +12,111 @@ enable_xcode: true
 
 # Dotfiles component config
 dotfiles_git_accept_new_hostkey: true
-dotfiles_git_dest: ~/.dotfiles
+dotfiles_git_dest: "~/.dotfiles"
 dotfiles_git_url: "git@github.com:eample/.dotfiles.git"
-dotfiles_setup_executable: setup.sh
+dotfiles_setup_executable: "setup.sh"
 
 # Dock component config
 dockitems_remove:
-  - App Store
-  - Launchpad
-  - Maps
-  - Photos
-  - Podcasts
-  - TV
+  - "App Store"
+  - "Launchpad"
+  - "Maps"
+  - "Photos"
+  - "Podcasts"
+  - "TV"
 
 dockitems_add:
-  - name: Safari
-    path: /Applications/Safari.app
-  - name: iTerm
-    path: /Applications/iTerm.app
-  - name: Slack
-    path: /Applications/Slack.app
-  - name: Microsoft Teams
-    path: /Applications/Microsoft Teams.app
-  - name: Notes
-    path: /Applications/Notes.app
-  - name: System Preferences
-    path: /Applications/System Preferences.app
+  - name: "Safari"
+    path: "/Applications/Safari.app"
+  - name: "iTerm"
+    path: "/Applications/iTerm.app"
+  - name: "Slack"
+    path: "/Applications/Slack.app"
+  - name: "Microsoft Teams"
+    path: "/Applications/Microsoft Teams.app"
+  - name: "Notes"
+    path: "/Applications/Notes.app"
+  - name: "System Preferences"
+    path: "/Applications/System Preferences.app"
 
 # Language versions ("" = disable, "latest" supported when available)
-goenv_global_version: latest
-luaver_global_version: 5.1.4
-n_global_version: latest
-pyenv_global_version: latest
-rbenv_global_version: 3.2.2
-rustup_global_version: nightly
+goenv_global_version: "latest"
+luaver_global_version: "5.1.4"
+n_global_version: "latest"
+pyenv_global_version: "latest"
+rbenv_global_version: "3.2.2"
+rustup_global_version: "nightly"
 
 # Homebrew
 homebrew_tap: []
 homebrew_required_casks:
-  - beardedspice
-  - flycut
-  - iterm2
-  - keka
-  - kekaexternalhelper
-  - microsoft-teams
-  - postman
-  - sequel-pro
-  - shiftit
-  - slack
-  - sourcetree
-  - techsmith-capture
+  - "beardedspice"
+  - "flycut"
+  - "iterm2"
+  - "keka"
+  - "kekaexternalhelper"
+  - "microsoft-teams"
+  - "postman"
+  - "sequel-pro"
+  - "shiftit"
+  - "slack"
+  - "sourcetree"
+  - "techsmith-capture"
 homebrew_required_packages:
-  - bash-completion@2
-  - cmake
-  - diff-so-fancy
-  - direnv
-  - dos2unix
-  - fd
-  - findutils
-  - fzf
-  - gh
-  - git
-  - git-absorb
-  - git-delta
-  - gnu-sed
-  - gnu-tar
-  - gnu-which
-  - goenv
-  - htop
-  - hub
-  - jq
-  - llvm
-  - luaver
-  - make
-  - moreutils
-  - n
-  - ncdu
-  - neovim
-  - neovim-remote
-  - ninja
-  - openssh
-  - pipx
-  - pyenv-virtualenv
-  - pyenv-virtualenvwrapper
-  - rbenv
-  - ripgrep
-  - rustup
-  - tree
-  - vim
-  - wget
-  - z
+  - "bash-completion@2"
+  - "cmake"
+  - "diff-so-fancy"
+  - "direnv"
+  - "dos2unix"
+  - "fd"
+  - "findutils"
+  - "fzf"
+  - "gh"
+  - "git"
+  - "git-absorb"
+  - "git-delta"
+  - "gnu-sed"
+  - "gnu-tar"
+  - "gnu-which"
+  - "goenv"
+  - "htop"
+  - "hub"
+  - "jq"
+  - "llvm"
+  - "luaver"
+  - "make"
+  - "moreutils"
+  - "n"
+  - "ncdu"
+  - "neovim"
+  - "neovim-remote"
+  - "ninja"
+  - "openssh"
+  - "pipx"
+  - "pyenv-virtualenv"
+  - "pyenv-virtualenvwrapper"
+  - "rbenv"
+  - "ripgrep"
+  - "rustup"
+  - "tree"
+  - "vim"
+  - "wget"
+  - "z"
 
 # pip global packages
 pip_required_packages: []
 
 # pipx managed python packages
 pipx_required_packages:
-  - ansible
-  - aws-shell
-  - awscli
-  - cookiecutter
-  - git-filter-repo
-  - pip-chill
-  - pipenv
-  - pre-commit
-  - ptpython
+  - "ansible"
+  - "aws-shell"
+  - "awscli"
+  - "cookiecutter"
+  - "git-filter-repo"
+  - "pip-chill"
+  - "pipenv"
+  - "pre-commit"
+  - "ptpython"
 
 # npm packages
 npm_required_packages: []

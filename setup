@@ -5,6 +5,7 @@ set -uo pipefail;
 PLAYBOOK_DIR="ansible"
 DEPS=(pyenv pipx)
 
+# If help is displayed, ignore everything else
 if [[ "$*" =~ "--help" || "$*" =~ "-h" ]]; then
     printf "%s" \
         "USAGE: setup [-h|--help]" \
@@ -17,8 +18,37 @@ if [[ "$*" =~ "--help" || "$*" =~ "-h" ]]; then
         "   to \`${PLAYBOOK_DIR}/config.yml\` and adjust it as needed." \
         "" \
         "OPTIONS:" \
-        "   -h, --help      Show this message."
+        "   -h, --help          Show this message." \
+        "   --check             Passed to Ansible." \
+        "   --tags <tag>        Passed to Ansible." \
+        "   --skip-tags <tag>   Passed to Ansible."
     exit 0
+fi
+
+# parse options/args
+if [[ $# -gt 0 ]]; then
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --check)
+                ANSIBLE_ARGS+=("--check")
+                shift
+                ;;
+            --tags)
+                ANSIBLE_ARGS+=("--tags" "$2")
+                shift
+                shift
+                ;;
+            --skip-tags)
+                ANSIBLE_ARGS+=("--skip-tags" "$2")
+                shift
+                shift
+                ;;
+            --*)
+                printf "%s\n" "Unknown option: $1"
+                exit 1
+                ;;
+        esac
+    done
 fi
 
 # Install Homebrew
@@ -56,11 +86,11 @@ PIPX_PREFIX=$(${PIPX_BIN} environment | "${GNU_GREP_BIN}" "^PIPX_BIN_DIR" | "${G
     cd "${PLAYBOOK_DIR}" || exit 1
     printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing playbook role dependencies...$(tput sgr0)" ""
     "${PIPX_PREFIX}/ansible-galaxy" collection install --ignore-errors --requirements-file requirements.yml
-    "${PIPX_PREFIX}/ansible-galaxy" role install --ignore-errors --roles-path roles --role-file requirements.yml
+    "${PIPX_PREFIX}/ansible-galaxy" role install --ignore-errors --roles-path galaxy --role-file requirements.yml
 
     # Run the Ansible playbook
     printf "\n%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
-    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass --skip-tags roles --check main.yml
+    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "${ANSIBLE_ARGS[@]}" main.yml
 )
 
 # vi: ft=sh

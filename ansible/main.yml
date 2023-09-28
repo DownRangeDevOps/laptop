@@ -122,12 +122,18 @@
     - name: dotfiles block
       block:
 
-      - name: Ensure the dotfiles repository is present and up to date
+      - name: Check for the presence of the dotfiles repository
+        stat:
+          path: "{{ dotfiles_git_dest }}"
+        register: results
+
+      - name: Clone the dotfiles repository
         git:
           accept_newhostkey: "{{ dotfiles_git_accept_new_hostkey }}"
           dest: "{{ dotfiles_git_dest }}"
           executable: "{{ homebrew_bin_path }}/git"
           repo: "{{ dotfiles_git_url }}"
+        when: not results is success
 
       - name: Ensure dotfiles setup is executable
         file:
