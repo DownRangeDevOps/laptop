@@ -3,7 +3,7 @@ set -uo pipefail;
 
 # defaults
 PLAYBOOK_DIR="ansible"
-DEPS=(pyenv pipx sed grep)
+DEPS=(pyenv pipx gnu-sed grep)
 ANSIBLE_ARGS=()
 
 # If help is displayed, ignore everything else
@@ -64,6 +64,8 @@ if ! command -v "${BREW_PREFIX}/bin/brew" > /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+PATH="${BREW_PREFIX}/bin:${PATH}"
+
 # Install dependencies
 printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing setup dependencies...$(tput sgr0)" ""
 "${BREW_PREFIX}/bin/brew" install "${DEPS[@]}" 2> /dev/null
@@ -91,6 +93,7 @@ fi
 # Install Ansible roles
 printf "%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Installing playbook role dependencies...$(tput sgr0)" ""
 PIPX_PREFIX=$(${PIPX_BIN} environment | "${GNU_GREP_BIN}" "^PIPX_BIN_DIR" | "${GNU_SED_BIN}" "s/.*=//")
+PATH="${PIPX_PREFIX}:${PATH}"
 (
     cd "${PLAYBOOK_DIR}" || exit 1
     "${PIPX_PREFIX}/ansible-galaxy" collection install --ignore-errors --requirements-file requirements.yml
@@ -98,7 +101,7 @@ PIPX_PREFIX=$(${PIPX_BIN} environment | "${GNU_GREP_BIN}" "^PIPX_BIN_DIR" | "${G
 
     # Run the Ansible playbook
     printf "\n%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
-    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "${ANSIBLE_ARGS[@]}" main.yml
+    "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "${ANSIBLE_ARGS[@]:-}" main.yml
 )
 
 # vi: ft=sh
