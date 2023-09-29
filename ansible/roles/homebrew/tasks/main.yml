@@ -106,6 +106,24 @@
       tags:
         - packages
 
+    - name: Set login shell to bash if it was installed
+      block:
+
+        - name: Ensure the path to Homebrew bash is added to /etc/shells
+          lineinfile:
+            backup: true
+            line: "{{ homebrew_bin_path}}/bash"
+            path: "/etc/shells"
+            regexp: "^{{ homebrew_bin_path}}/bash$"
+
+        - name: Ensure the user's shell is set to Homebrew's bash
+          user:
+            name: "{{ ansible_user_id }}"
+            shell: "{{ homebrew_bin_path }}/bash"
+          become: true
+
+      when: homebrew_required_packages is contains("bash")
+
   # Privilege escalation is only required for inner steps when
   # the `homebrew_user` doesn't match the `ansible_user_id`
   become: "{{ (homebrew_user != ansible_user_id) | bool }}"
