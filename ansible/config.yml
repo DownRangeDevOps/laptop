@@ -4,8 +4,9 @@ git_user: "Ryan Fisher"
 git_email: "ryan@downrangedevops.com"
 
 # Dotfiles component config
-dotfiles_git_url: "git@github.com:DownRangeDevOps/.dotfiles.git"
-dotfiles_git_dest: "~/.dotfiles"
+dotfiles_git_url: "https://github.com/DownRangeDevOps/.dotfiles.git"
+dotfiles_git_dest: "{{ ansible_env.HOME }}/.dotfiles"
+dotfiles_setup_executable: "setup.sh"
 
 # Dock component config
 dockitems_remove:

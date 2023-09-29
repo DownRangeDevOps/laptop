@@ -3,18 +3,18 @@ git_name: ""
 git_email: ""
 
 # Enable/disable components
-enable_dock: true
-enable_dotfiles: true
-enable_git_config: true
-enable_homebrew: true
-enable_pipx: true
-enable_xcode: true
+enable_dock: True
+enable_dotfiles: True
+enable_git_config: True
+enable_homebrew: True
+enable_pipx: True
+enable_xcode: True
 
 # Dotfiles component config
-dotfiles_git_accept_new_hostkey: true
-dotfiles_git_dest: "~/.dotfiles"
-dotfiles_git_url: "git@github.com:eample/.dotfiles.git"
-dotfiles_setup_executable: "setup.sh"
+dotfiles_git_accept_new_hostkey: True
+dotfiles_git_dest: "{{ ansible_env.HOME }}/.dotfiles"
+dotfiles_git_url: ""
+dotfiles_setup_executable: ""
 
 # Dock component config
 dockitems_remove:
@@ -51,6 +51,8 @@ pyenv_global_version: "latest"
 rbenv_global_version: "3.2.2"
 
 # Homebrew
+homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
+homebrew_bin_path: "{{ homebrew_prefix }}/bin"
 homebrew_tap: []
 homebrew_cask_uninstalled_apps: []
 homebrew_required_casks:
@@ -112,6 +114,7 @@ homebrew_required_packages:
 n_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt', '/usr/local') }}"
 
 # pip global packages
+pip_bin_path: "{{ ansible_env.HOME }}/.pyenv/shims/pip"
 pip_required_packages: []
 
 # pipx managed python packages

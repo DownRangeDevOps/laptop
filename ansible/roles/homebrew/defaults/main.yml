@@ -1,18 +1,18 @@
 ---
-homebrew_upgrade_all_packages: false
-homebrew_clear_cache: true
+homebrew_upgrade_all_packages: False
+homebrew_clear_cache: True
 
 homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
-homebrew_brew_bin_path: "{{ homebrew_prefix }}/bin"
+homebrew_bin_path: "{{ homebrew_prefix }}/bin"
 
 homebrew_taps: []
 
 homebrew_required_casks: []
 homebrew_cask_uninstalled_apps: []
-homebrew_cask_accept_external_apps: true
+homebrew_cask_accept_external_apps: True
 
 homebrew_required_packages: []
 homebrew_uninstalled_packages: []
 
-homebrew_use_brewfile: true # only used if it exists
+homebrew_use_brewfile: True # only used if it exists
 homebrew_brewfile_dir: "{{ ansible_env.HOME }}"

@@ -24,10 +24,10 @@
   block:
 
     - name: Ensure brew is updated
-      command: "{{ homebrew_brew_bin_path }}/brew update --force"
+      command: "{{ homebrew_bin_path }}/brew update --force"
 
     - name: Query brew for the Homebrew cache location
-      command: "{{ homebrew_brew_bin_path }}/brew --cache"
+      command: "{{ homebrew_bin_path }}/brew --cache"
       register: homebrew_cache_path
       changed_when: false
       check_mode: false
@@ -101,7 +101,7 @@
         - always
 
     - name: Install from Brewfile
-      command: "{{ homebrew_brew_bin_path }}/brew bundle chdir={{ homebrew_brewfile_dir }}"
+      command: "{{ homebrew_bin_path }}/brew bundle chdir={{ homebrew_brewfile_dir }}"
       when: homebrew_brewfile.stat.exists and homebrew_use_brewfile | bool
       tags:
         - packages

@@ -41,14 +41,17 @@
   tasks:
     # goenv
     - name: Ensure the desired Golang version is installed and globally set
-      command: "goenv install --skip-existing {{ goenv_global_version }}"
+      command: "{{ homebrew_bin_path }}/goenv install --skip-existing {{ goenv_global_version }}"
+      register: results
+      changed_when: results.stdout != ""
       tags:
         - goenv
         - languages
 
     - name: Get latest goenv installed version
-      shell: "goenv versions | grep '^\\*' | cut -d' ' -f2"
+      shell: "{{ homebrew_bin_path }}/goenv versions | grep '^\\*' | cut -d' ' -f2"
       register: goenv_versions_results
+      when: goenv_global_version == "latest"
       changed_when: False
       tags:
         - always
@@ -61,12 +64,13 @@
       tags:
         - always
 
-
     - name: Ensure the desired goenv versions is globally set
-      command: "goenv global {{ goenv_global_version }}"
+      command: "{{ homebrew_bin_path }}/goenv global {{ goenv_global_version }}"
+      changed_when: False
 
+    # luaver
     - name: Ensure the desired Lua version is installed and globally set
-      command: "luaver {{ item }}"
+      command: "{{ homebrew_bin_path }}/luaver {{ item }}"
       loop:
         - "install {{ luaver_global_version }}"
         - "set-default {{ luaver_global_version }}"
@@ -76,7 +80,7 @@
 
     # pyenv
     - name: Query pyenv for the latest known Python 3 version
-      command: pyenv latest --known 3
+      command: "{{ homebrew_bin_path }}/pyenv latest --known 3"
       register: pyenv_latest_results
       when: pyenv_global_version == "latest"
       changed_when: False
@@ -91,7 +95,7 @@
         - always
 
     - name: Ensure the desired Python version is installed and globally set
-      command: "pyenv {{ item }}"
+      command: "{{ homebrew_bin_path }}/pyenv {{ item }}"
       loop:
         - "install --skip-existing {{ pyenv_global_version }}"
         - "global {{ pyenv_global_version }}"
@@ -107,10 +111,10 @@
         owner: "{{ ansible_user_id }}"
         path: "{{ n_prefix }}"
         state: directory
-      become: true
+      become: True
 
     - name: Ensure the desired NodeJS version is installed and globally set
-      command: "n {{ n_global_version }}"
+      command: "{{ homebrew_bin_path }}/n {{ n_global_version }}"
       environment:
         N_PREFIX: "{{ n_prefix }}"
       tags:
@@ -119,7 +123,7 @@
 
     # rbenv
     - name: Ensure the desired Ruby version is installed and globally set
-      command: rbenv {{ item }}
+      command: "{{ homebrew_bin_path }}/rbenv {{ item }}"
       loop:
         - "install --skip-existing {{ rbenv_global_version }}"
         - "global {{ rbenv_global_version }}"
@@ -134,7 +138,7 @@
       - name: Check for the presence of the dotfiles repository
         stat:
           path: "{{ dotfiles_git_dest }}"
-        register: results
+        register: dotfiles
 
       - name: Clone the dotfiles repository
         git:
@@ -142,18 +146,18 @@
           dest: "{{ dotfiles_git_dest }}"
           executable: "{{ homebrew_bin_path }}/git"
           repo: "{{ dotfiles_git_url }}"
-        when: not results is success
+        when: not dotfiles.stat.exists and dotfiles_git_url != ""
 
       - name: Ensure dotfiles setup is executable
         file:
           mode: "u+x"
           path: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
           state: file
-        when: dotfiles_setup_executable | bool
+        when: dotfiles_setup_executable != "" and dotfiles.stat.exists
 
       - name: Run dotfiles setup executable
         command: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
-        when: dotfiles_setup_executable | bool
+        when: dotfiles_setup_executable != "" and dotfiles.stat.exists
 
       when: enable_dotfiles | bool
       tags:
@@ -170,7 +174,7 @@
           value: "{{ git_name }}"
         - name: user.email
           value: "{{ git_email }}"
-      when: enable_git_config and item.value != ""
+      when: enable_git_config | bool and item.value != ""
       tags:
         - git-config
 
@@ -186,6 +190,8 @@
     - name: Set pip path variable
       set_fact:
         pip_bin_path: "{{ pyenv_which_pip_results.stdout }}"
+      when: pyenv_which_pip_results.stdout != ""
+      changed_when: False
       tags:
         - always
         - pip
@@ -211,16 +217,20 @@
 
     # npm packages
     - name: Query the installed NodeJS versions from n
-      command: n ls
+      command: "{{ homebrew_bin_path }}/n ls"
       register: n_ls_results
+      environment:
+        N_PREFIX: "{{ n_prefix }}"
       changed_when: False
       check_mode: False
       tags:
         - always
 
     - name: Query the path to the latest installed NodeJS version from n
-      command: "n which {{ n_ls_results.stdout_lines | last }}"
+      command: "{{ homebrew_bin_path }}/n which {{ n_ls_results.stdout_lines | last }}"
       register: n_which_results
+      environment:
+        N_PREFIX: "{{ n_prefix }}"
       changed_when: False
       tags:
         - always
@@ -238,6 +248,7 @@
         global: True
         name: item
       loop: "{{ npm_required_packages }}"
+      when: n_node_bin_path != ""
       tags:
         - npm
         - packages
