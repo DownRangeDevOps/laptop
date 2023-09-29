@@ -58,6 +58,7 @@ homebrew_cask_uninstalled_apps: []
 homebrew_required_casks:
   - "beardedspice"
   - "flycut"
+  - "google-cloud-sdk"
   - "iterm2"
   - "keka"
   - "kekaexternalhelper"

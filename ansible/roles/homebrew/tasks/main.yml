@@ -29,8 +29,8 @@
     - name: Query brew for the Homebrew cache location
       command: "{{ homebrew_bin_path }}/brew --cache"
       register: homebrew_cache_path
-      changed_when: false
-      check_mode: false
+      changed_when: False
+      check_mode: False
       tags:
         - always
 
@@ -83,8 +83,8 @@
 
     - name: Upgrade all Homebrew packages
       homebrew:
-        update_homebrew: true
-        upgrade_all: true
+        update_homebrew: True
+        upgrade_all: True
       when: homebrew_upgrade_all_packages | bool
       notify:
         - Clear homebrew cache
@@ -95,7 +95,7 @@
       stat:
         path: "{{ homebrew_brewfile_dir }}/Brewfile"
       register: homebrew_brewfile
-      check_mode: false
+      check_mode: False
       when: homebrew_use_brewfile | bool
       tags:
         - always
@@ -111,16 +111,16 @@
 
         - name: Ensure the path to Homebrew bash is added to /etc/shells
           lineinfile:
-            backup: true
+            backup: True
             line: "{{ homebrew_bin_path}}/bash"
             path: "/etc/shells"
             regexp: "^{{ homebrew_bin_path}}/bash$"
+          become: True
 
         - name: Ensure the user's shell is set to Homebrew's bash
           user:
             name: "{{ ansible_user_id }}"
             shell: "{{ homebrew_bin_path }}/bash"
-          become: true
 
       when: homebrew_required_packages is contains("bash")
 

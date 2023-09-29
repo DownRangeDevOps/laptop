@@ -66,6 +66,7 @@ homebrew_required_casks:
   - "docker"
   - "flux"
   - "flycut"
+  - "google-cloud-sdk"
   - "iterm2"
   - "karabiner-elements"
   - "keka"
