@@ -1,13 +1,13 @@
 ---
 - name: Set Homebrew homebrew_user variable
-  set_fact:
+  ansible.builtin.set_fact:
     homebrew_user: "{{ homebrew_user | default(ansible_user_id) }}"
     homebrew_group: "{{ homebrew_group | default(ansible_user_gid) }}"
   tags:
     - always
 
 - name: Ensure the homebrew parent directory has the correct permissions
-  file:
+  ansible.builtin.file:
     group: "{{ ansible_user_gid }}"
     mode: "0755"
     owner: "{{ ansible_user_id }}"
@@ -15,7 +15,7 @@
     state: directory
 
 - name: Collect package manager facts
-  setup:
+  ansible.builtin.setup:
     filter: ansible_pkg_mgr
   tags:
     - always
@@ -24,10 +24,10 @@
   block:
 
     - name: Ensure brew is updated
-      command: "{{ homebrew_bin_path }}/brew update --force"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/brew update --force"
 
     - name: Query brew for the Homebrew cache location
-      command: "{{ homebrew_bin_path }}/brew --cache"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/brew --cache"
       register: homebrew_cache_path
       changed_when: False
       check_mode: False
@@ -35,7 +35,7 @@
         - always
 
     - name: Ensure configured taps are tapped
-      homebrew_tap:
+      community.general.homebrew_tap:
         tap: "{{ item.name | default(item) }}"
         url: "{{ item.url | default(omit) }}"
         state: present
@@ -45,7 +45,7 @@
 
     # Casks
     - name: Ensure blacklisted cask applications are not installed
-      homebrew_cask:
+      community.general.homebrew_cask:
         name: "{{ item }}"
         state: absent
         sudo_password: "{{ ansible_become_password | default(omit) }}"
@@ -54,7 +54,7 @@
         - casks
 
     - name: Ensure required cask applications are installed
-      homebrew_cask:
+      community.general.homebrew_cask:
         name: "{{ homebrew_required_casks }}"
         state: present
         accept_external_apps: "{{ homebrew_cask_accept_external_apps }}"
@@ -64,25 +64,35 @@
       tags:
         - casks
 
+    # Packages
     - name: Ensure blacklisted Homebrew packages are not installed
-      homebrew:
+      community.general.homebrew:
         name: "{{ homebrew_uninstalled_packages }}"
         state: absent
+      register: results
       tags:
         - packages
 
-    # Packages
+    - name: Display the results of `brew uninstall`
+      ansible.builtin.debug:
+        msg: "{{ results.msg }}"
+
     - name: Ensure required Homebrew packages are installed
-      homebrew:
+      community.general.homebrew:
         name: "{{ homebrew_required_packages }}"
         state: present
+      register: results
       notify:
         - Clear homebrew cache
       tags:
         - packages
 
+    - name: Display the results of `brew install`
+      ansible.builtin.debug:
+        msg: "{{ results.msg }}"
+
     - name: Upgrade all Homebrew packages
-      homebrew:
+      community.general.homebrew:
         update_homebrew: True
         upgrade_all: True
       when: homebrew_upgrade_all_packages | bool
@@ -92,7 +102,7 @@
         - packages
 
     - name: Check for Brewfile
-      stat:
+      ansible.builtin.stat:
         path: "{{ homebrew_brewfile_dir }}/Brewfile"
       register: homebrew_brewfile
       check_mode: False
@@ -101,28 +111,10 @@
         - always
 
     - name: Install from Brewfile
-      command: "{{ homebrew_bin_path }}/brew bundle chdir={{ homebrew_brewfile_dir }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/brew bundle chdir={{ homebrew_brewfile_dir }}"
       when: homebrew_brewfile.stat.exists and homebrew_use_brewfile | bool
       tags:
         - packages
-
-    - name: Set login shell to bash if it was installed
-      block:
-
-        - name: Ensure the path to Homebrew bash is added to /etc/shells
-          lineinfile:
-            backup: True
-            line: "{{ homebrew_bin_path}}/bash"
-            path: "/etc/shells"
-            regexp: "^{{ homebrew_bin_path}}/bash$"
-          become: True
-
-        - name: Ensure the user's shell is set to Homebrew's bash
-          user:
-            name: "{{ ansible_user_id }}"
-            shell: "{{ homebrew_bin_path }}/bash"
-
-      when: homebrew_required_packages is contains("bash")
 
   # Privilege escalation is only required for inner steps when
   # the `homebrew_user` doesn't match the `ansible_user_id`

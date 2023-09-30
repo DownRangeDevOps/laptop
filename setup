@@ -4,7 +4,6 @@ set -uo pipefail;
 # defaults
 PLAYBOOK_DIR="ansible"
 DEPS=(pyenv pipx gnu-sed grep)
-ANSIBLE_ARGS=()
 
 # If help is displayed, ignore everything else
 if [[ "$*" =~ "--help" || "$*" =~ "-h" ]]; then
@@ -75,9 +74,9 @@ PATH="${PIPX_PREFIX}:${PATH}"
     # Run the Ansible playbook
     printf "\n%b\n" "$(tput bold)$(tput setaf 4)==> $(tput sgr0)$(tput bold)Running playbook, you will be prompted for your password...$(tput sgr0)" ""
     if [[ $# -gt 0 ]]; then
-        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "$@" main.yml
+        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass "$@" main.yml -e "ansible_python_interpreter=$(${PYENV_BIN} which python)"
     else
-        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass main.yml
+        "${PIPX_PREFIX}/ansible-playbook" --ask-become-pass main.yml -e "ansible_python_interpreter=$(${PYENV_BIN} which python)"
     fi
 )
 

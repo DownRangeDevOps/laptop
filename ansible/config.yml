@@ -1,12 +1,15 @@
 ---
 # Git global config
 git_user: "Ryan Fisher"
-git_email: "ryan@downrangedevops.com"
+git_email: "jon.fisher@grainger.com"
 
 # Dotfiles component config
 dotfiles_git_url: "https://github.com/DownRangeDevOps/.dotfiles.git"
 dotfiles_git_dest: "{{ ansible_env.HOME }}/.dotfiles"
 dotfiles_setup_executable: "setup.sh"
+
+# System config
+user_login_shell: "{{ homebrew_bin_path }}/bash"
 
 # Dock component config
 dockitems_remove:

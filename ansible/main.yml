@@ -6,8 +6,13 @@
     "{{ playbook_dir }}/config.default.yml"
 
   pre_tasks:
-    - name: Set variables pre-tasks
+    - name: Always run
       block:
+
+      - name: Checking your password, if this hangs, it's wrong (CTRL+C to quit)
+        ansible.builtin.command: "echo success"
+        changed_when: False
+        become: True
 
       - name: Include custom config
         include_vars: "{{ item }}"
@@ -39,9 +44,24 @@
         - dock
 
   tasks:
+    # system
+    - name: Ensure the path to the desired login shell is added to /etc/shells
+      ansible.builtin.lineinfile:
+        backup: True
+        line: "{{ user_login_shell }}"
+        path: "/etc/shells"
+        regexp: "^{{ user_login_shell }}$"
+      become: True
+
+    - name: Ensure the user's desired login shell is set
+      ansible.builtin.user:
+        name: "{{ ansible_user_id }}"
+        shell: "{{ user_login_shell }}"
+      become: True
+
     # goenv
     - name: Ensure the desired Golang version is installed and globally set
-      command: "{{ homebrew_bin_path }}/goenv install --skip-existing {{ goenv_global_version }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/goenv install --skip-existing {{ goenv_global_version }}"
       register: results
       changed_when: results.stdout != ""
       tags:
@@ -49,7 +69,7 @@
         - languages
 
     - name: Get latest goenv installed version
-      shell: "{{ homebrew_bin_path }}/goenv versions | grep '^\\*' | cut -d' ' -f2"
+      ansible.builtin.shell: "{{ homebrew_bin_path }}/goenv versions | grep '^\\*' | cut -d' ' -f2"
       register: goenv_versions_results
       when: goenv_global_version == "latest"
       changed_when: False
@@ -65,12 +85,12 @@
         - always
 
     - name: Ensure the desired goenv versions is globally set
-      command: "{{ homebrew_bin_path }}/goenv global {{ goenv_global_version }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/goenv global {{ goenv_global_version }}"
       changed_when: False
 
-    # luaver
+      # luaver
     - name: Ensure the desired Lua version is installed and globally set
-      command: "{{ homebrew_bin_path }}/luaver {{ item }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/luaver {{ item }}"
       loop:
         - "install {{ luaver_global_version }}"
         - "set-default {{ luaver_global_version }}"
@@ -80,7 +100,7 @@
 
     # pyenv
     - name: Query pyenv for the latest known Python 3 version
-      command: "{{ homebrew_bin_path }}/pyenv latest --known 3"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/pyenv latest --known 3"
       register: pyenv_latest_results
       when: pyenv_global_version == "latest"
       changed_when: False
@@ -95,7 +115,7 @@
         - always
 
     - name: Ensure the desired Python version is installed and globally set
-      command: "{{ homebrew_bin_path }}/pyenv {{ item }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/pyenv {{ item }}"
       loop:
         - "install --skip-existing {{ pyenv_global_version }}"
         - "global {{ pyenv_global_version }}"
@@ -105,7 +125,7 @@
 
     # n
     - name: Ensure the n directory is present and owned by the current user
-      file:
+      ansible.builtin.file:
         group: "{{ ansible_user_gid }}"
         mode: "0754"
         owner: "{{ ansible_user_id }}"
@@ -114,16 +134,16 @@
       become: True
 
     - name: Ensure the desired NodeJS version is installed and globally set
-      command: "{{ homebrew_bin_path }}/n {{ n_global_version }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/n {{ n_global_version }}"
       environment:
         N_PREFIX: "{{ n_prefix }}"
       tags:
         - nodejs
         - languages
 
-    # rbenv
+      # rbenv
     - name: Ensure the desired Ruby version is installed and globally set
-      command: "{{ homebrew_bin_path }}/rbenv {{ item }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/rbenv {{ item }}"
       loop:
         - "install --skip-existing {{ rbenv_global_version }}"
         - "global {{ rbenv_global_version }}"
@@ -131,17 +151,17 @@
         - ruby
         - languages
 
-    # Clone & setup dotfiles
+          # Clone & setup dotfiles
     - name: dotfiles block
       block:
 
       - name: Check for the presence of the dotfiles repository
-        stat:
+        ansible.builtin.stat:
           path: "{{ dotfiles_git_dest }}"
         register: dotfiles
 
       - name: Clone the dotfiles repository
-        git:
+        ansible.builtin.git:
           accept_newhostkey: "{{ dotfiles_git_accept_new_hostkey }}"
           dest: "{{ dotfiles_git_dest }}"
           executable: "{{ homebrew_bin_path }}/git"
@@ -149,7 +169,7 @@
         when: not dotfiles.stat.exists and dotfiles_git_url != ""
 
       - name: Ensure dotfiles setup is executable
-        file:
+        ansible.builtin.file:
           mode: "u+x"
           path: "{{ dotfiles_git_dest }}/{{ dotfiles_setup_executable }}"
           state: file
@@ -165,7 +185,7 @@
 
     # Git configuration
     - name: Set global git configuration values
-      git_config:
+      ansible.builtin.git_config:
         name: "{{ item.name }}"
         scope: global
         value: "{{ item.value }}"
@@ -178,7 +198,7 @@
       tags:
         - git-config
 
-    # pip global packages
+      # pip global packages
     - name: Query pyenv for the path to the current pip version
       command: "{{ homebrew_bin_path }}/pyenv which pip"
       register: pyenv_which_pip_results
@@ -197,13 +217,13 @@
         - pip
 
     - name: Ensure pip python packages are installed
-      pip:
+      ansible.builtin.pip:
         executable: "{{ pip_bin_path }}"
         name: "{{ pip_required_packages }}"
       tags:
         - pip
 
-    # pipx packages
+      # pipx packages
     - name: Ensure pipx python packages are installed
       community.general.pipx:
         executable: "{{ homebrew_bin_path }}/pipx"
@@ -215,9 +235,9 @@
         - pipx
         - packages
 
-    # npm packages
+      # npm packages
     - name: Query the installed NodeJS versions from n
-      command: "{{ homebrew_bin_path }}/n ls"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/n ls"
       register: n_ls_results
       environment:
         N_PREFIX: "{{ n_prefix }}"
@@ -227,7 +247,7 @@
         - always
 
     - name: Query the path to the latest installed NodeJS version from n
-      command: "{{ homebrew_bin_path }}/n which {{ n_ls_results.stdout_lines | last }}"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/n which {{ n_ls_results.stdout_lines | last }}"
       register: n_which_results
       environment:
         N_PREFIX: "{{ n_prefix }}"
@@ -243,7 +263,7 @@
         - always
 
     - name: Ensure NodeJS npm packages are installed
-      npm:
+      ansible.builtin.npm:
         executable: "{{ n_node_bin_path }}/npm"
         global: True
         name: item
@@ -255,14 +275,14 @@
 
     # Ruby gems
     - name: Query the path to the rbenv gem executable
-      command: "{{ homebrew_bin_path }}/rbenv which gem"
+      ansible.builtin.command: "{{ homebrew_bin_path }}/rbenv which gem"
       register: rbenv_which_gem_results
       changed_when: False
       tags:
         - always
 
     - name: Ensure Ruby gems are installed
-      gem:
+      ansible.builtin.gem:
         executable: "{{ rbenv_which_gem_results.stdout }}"
         name: "{{ item }}"
       loop: "{{ gem_required_packages }}"
