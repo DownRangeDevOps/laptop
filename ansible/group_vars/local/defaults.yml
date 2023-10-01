@@ -89,6 +89,7 @@ homebrew_required_packages:
   - "gnu-sed"
   - "gnu-tar"
   - "gnu-which"
+  - "go"
   - "goenv"
   - "htop"
   - "hub"

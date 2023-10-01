@@ -151,7 +151,18 @@
         - ruby
         - languages
 
-          # Clone & setup dotfiles
+    # rustup-init
+    - name: Ensure the desired Rust version is installed
+      ansible.builtin.command: >-
+        {{ homebrew_bin_path }}/rustup-init
+        --quiet
+        --default-host x86_64-apple-darwin
+        --default-toolchain stable
+        --profile default
+        --no-modify-path
+        -y
+
+    # Clone & setup dotfiles
     - name: dotfiles block
       block:
 
