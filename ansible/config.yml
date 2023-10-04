@@ -66,6 +66,7 @@ homebrew_required_casks:
   - "clocker"
   - "coconutbattery"
   - "dash"
+  - "deathtodsstore"
   - "docker"
   - "flux"
   - "flycut"
@@ -84,6 +85,7 @@ homebrew_required_casks:
   - "spotify"
   - "techsmith-capture"
   - "vivaldi"
+
 homebrew_required_packages:
   - "bash-completion@2"
   - "cask"

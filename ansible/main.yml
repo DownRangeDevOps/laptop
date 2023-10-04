@@ -88,7 +88,14 @@
       ansible.builtin.command: "{{ homebrew_bin_path }}/goenv global {{ goenv_global_version }}"
       changed_when: False
 
-      # luaver
+    # luaver
+    - name: Ensure luaver is initialized
+      ansible.builtin.shell: "source {{ homebrew_bin_path }}/luaver"
+      changed_when: False
+      tags:
+        - lua
+        - languages
+
     - name: Ensure the desired Lua version is installed and globally set
       ansible.builtin.command: "{{ homebrew_bin_path }}/luaver {{ item }}"
       loop:

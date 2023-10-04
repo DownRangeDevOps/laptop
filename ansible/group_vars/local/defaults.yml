@@ -60,6 +60,7 @@ homebrew_tap: []
 homebrew_cask_uninstalled_apps: []
 homebrew_required_casks:
   - "beardedspice"
+  - "deathtodsstore"
   - "flycut"
   - "google-cloud-sdk"
   - "iterm2"
@@ -72,7 +73,9 @@ homebrew_required_casks:
   - "slack"
   - "sourcetree"
   - "techsmith-capture"
+
 homebrew_uninstalled_packages: []
+
 homebrew_required_packages:
   - "bash-completion@2"
   - "cmake"
