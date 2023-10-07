@@ -21,37 +21,37 @@ dotfiles_setup_executable: ""
 
 # Dock component config
 dockitems_remove:
-  - "App Store"
-  - "Launchpad"
-  - "Maps"
-  - "Photos"
-  - "Podcasts"
-  - "TV"
+  - App Store
+  - Launchpad
+  - Maps
+  - Photos
+  - Podcasts
+  - TV
 
 dockitems_add:
-  - name: "Safari"
-    path: "/System/Volumes/Cryptexes/App/System/Applications/Safari.app"
+  - name: Safari
+    path: /System/Volumes/Cryptexes/App/System/Applications/Safari.app
     pos: 2
-  - name: "iTerm"
-    path: "/Applications/iTerm.app"
+  - name: iTerm
+    path: /Applications/iTerm.app
     pos: 3
-  - name: "Slack"
-    path: "/Applications/Slack.app"
+  - name: Slack
+    path: /Applications/Slack.app
     pos: 4
-  - name: "Microsoft Teams"
-    path: "/Applications/Microsoft Teams.app"
+  - name: Microsoft Teams
+    path: /Applications/Microsoft Teams.app
     pos: 5
-  - name: "Notes"
-    path: "/Applications/Notes.app"
-  - name: "System Settings"
-    path: "/Applications/System Settings.app"
+  - name: Notes
+    path: /Applications/Notes.app
+  - name: System Settings
+    path: /Applications/System Settings.app
 
 # Language versions ("" = disable, "latest" supported when available)
-goenv_global_version: "latest"
-luaver_global_version: "5.1.4"
-n_global_version: "latest"
-pyenv_global_version: "latest"
-rbenv_global_version: "3.2.2"
+goenv_global_version: latest
+luaver_global_version: 5.1.4
+n_global_version: latest
+pyenv_global_version: latest
+rbenv_global_version: 3.2.2
 
 # Homebrew
 homebrew_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt/homebrew', '/usr/local') }}"
@@ -59,64 +59,65 @@ homebrew_bin_path: "{{ homebrew_prefix }}/bin"
 homebrew_tap: []
 homebrew_cask_uninstalled_apps: []
 homebrew_required_casks:
-  - "beardedspice"
-  - "deathtodsstore"
-  - "flycut"
-  - "google-cloud-sdk"
-  - "iterm2"
-  - "keka"
-  - "kekaexternalhelper"
-  - "microsoft-teams"
-  - "postman"
-  - "sequel-pro"
-  - "shiftit"
-  - "slack"
-  - "sourcetree"
-  - "techsmith-capture"
+  - beardedspice
+  - deathtodsstore
+  - flycut
+  - google-cloud-sdk
+  - iterm2
+  - keka
+  - kekaexternalhelper
+  - microsoft-teams
+  - postman
+  - sequel-pro
+  - shiftit
+  - slack
+  - sourcetree
+  - techsmith-capture
 
 homebrew_uninstalled_packages: []
 
 homebrew_required_packages:
-  - "bash-completion@2"
-  - "cmake"
-  - "diff-so-fancy"
-  - "direnv"
-  - "dos2unix"
-  - "fd"
-  - "findutils"
-  - "fzf"
-  - "gh"
-  - "git"
-  - "git-absorb"
-  - "git-delta"
-  - "gnu-sed"
-  - "gnu-tar"
-  - "gnu-which"
-  - "go"
-  - "goenv"
-  - "htop"
-  - "hub"
-  - "jq"
-  - "llvm"
-  - "luaver"
-  - "make"
-  - "moreutils"
-  - "n"
-  - "ncdu"
-  - "neovim"
-  - "neovim-remote"
-  - "ninja"
-  - "openssh"
-  - "pipx"
-  - "pyenv-virtualenv"
-  - "pyenv-virtualenvwrapper"
-  - "rbenv"
-  - "ripgrep"
-  - "rustup-init"
-  - "tree"
-  - "vim"
-  - "wget"
-  - "z"
+  - bash-completion@2
+  - cmake
+  - diff-so-fancy
+  - direnv
+  - dos2unix
+  - editorconfig-checker
+  - fd
+  - findutils
+  - fzf
+  - gh
+  - git
+  - git-absorb
+  - git-delta
+  - gnu-sed
+  - gnu-tar
+  - gnu-which
+  - go
+  - goenv
+  - htop
+  - hub
+  - jq
+  - llvm
+  - luaver
+  - make
+  - moreutils
+  - n
+  - ncdu
+  - neovim
+  - neovim-remote
+  - ninja
+  - openssh
+  - pipx
+  - pyenv-virtualenv
+  - pyenv-virtualenvwrapper
+  - rbenv
+  - ripgrep
+  - rustup-init
+  - tree
+  - vim
+  - wget
+  - z
 
 # n
 n_prefix: "{{ (ansible_machine == 'arm64') | ternary('/opt', '/usr/local') }}"
@@ -127,15 +128,15 @@ pip_required_packages: []
 
 # pipx managed python packages
 pipx_required_packages:
-  - "ansible"
-  - "aws-shell"
-  - "awscli"
-  - "cookiecutter"
-  - "git-filter-repo"
-  - "pip-chill"
-  - "pipenv"
-  - "pre-commit"
-  - "ptpython"
+  - ansible
+  - aws-shell
+  - awscli
+  - cookiecutter
+  - git-filter-repo
+  - pip-chill
+  - pipenv
+  - pre-commit
+  - ptpython
 
 # npm packages
 npm_required_packages: []
